@@ -1,8 +1,7 @@
 <!--[![Pytest](https://img.shields.io/badge/Pytest-fff?logo=pytest&logoColor=000)](https://docs.pytest.org/en/stable/)
 [![uv](https://img.shields.io/badge/Managed_by_uv-8333E9?logo=python&logoColor=fff&labelColor=8333E9)](#)-->
 # ledge
-[Unit Tests]
-[![Python](https://img.shields.io/badge/Python-3.8+-gray?logo=python&logoColor=fff&labelColor=3776AB)](https://www.python.org/)
+[![Unit Tests](https://github.com/Chase-Horton/ledge/actions/workflows/ci.yml/badge.svg)](https://github.com/Chase-Horton/ledge/actions/workflows/ci.yml)
 
 `ledge` is a Python-based accounting framework designed for developers, and businesses who want full ownership of their financial data without the performance bottlenecks of text files or the privacy nightmares of the cloud.
 ## Philosophy

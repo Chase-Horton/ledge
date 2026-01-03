@@ -1,0 +1,41 @@
+
+/* make links to types look like code */
+.sig-param .n .reference.internal,
+.sig-param .n .reference.external,
+span.sig-return-typehint .reference.internal,
+span.sig-annotation a {
+    background-color: #f3f6f9;
+    border: 1px solid #e1e4e8;
+    border-radius: 4px;
+    padding: 0px 4px;
+    font-family: monospace;
+    font-size: 0.9em;
+    color: #24292e;
+    text-decoration: none;
+    display: inline-block;
+}
+
+dl.field-list ul li p a.reference.internal,
+dl.field-list ul li p a.reference.external {
+    background-color: #f3f6f9;
+    border: 1px solid #e1e4e8;
+    border-radius: 4px;
+    padding: 0px 4px;
+    font-family: monospace;
+    font-size: 0.9em;
+    color: #b0425b;
+    text-decoration: none;
+    font-style: normal;
+}
+
+dl.field-list ul li p a.reference.internal em,
+dl.field-list ul li p a.reference.external em {
+    font-style: normal;
+}
+
+/* Hover effects */
+dl.field-list ul li p a.reference.internal:hover,
+.sig-param .n .reference.internal:hover {
+    background-color: #e1e4e8;
+    color: #0366d6;
+}
