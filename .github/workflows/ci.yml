@@ -1,4 +1,4 @@
-name: Unit Tests
+name: Continuous Integration Tests
 
 on:
   push:
@@ -8,13 +8,13 @@ on:
   workflow_call:
 
 jobs:
-  tests:
-    name: Test Python ${{ matrix.python-version }}
+  unit-tests:
+    name: Unit Tests Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
 
     steps:
       - uses: actions/checkout@v4
@@ -28,8 +28,17 @@ jobs:
         run: uv python install ${{ matrix.python-version }}
 
       - name: Run Tests
-        # uv run automatically creates the venv, installs deps from pyproject.toml, and runs pytest
-        run: uv run pytest
+        run: uv run --no-dev --group test pytest -m "not integration" --cov=src --cov-report=term-missing
+
+      # Temporarily save coverage data to pass to the integration job
+      - name: Upload Coverage Artifact
+        if: matrix.python-version == '3.13'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-data
+          path: .coverage
+          include-hidden-files: true
+          retention-days: 1
 
   type-check:
     name: Type Check
@@ -46,4 +55,93 @@ jobs:
         run: uv python install 3.13
 
       - name: Run Mypy
-        run: uv run mypy ./src/ --strict
+        run: uv run --no-dev --group lint mypy ./src/ --strict
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: unit-tests
+
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: ledge_test_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install Python 3.13
+        run: uv python install 3.13
+
+      - name: Download Coverage Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-data
+
+      - name: Run Integration Tests
+        run: uv run --no-dev --group test pytest -m "integration"  --cov=src --cov-append --cov-report=term-missing --cov-report=json
+        env:
+          postgres_user: postgres
+          postgres_password: ledge_test_password
+          postgres_host: localhost
+          postgres_port: 5432
+      - name: Upload Coverage JSON
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-json
+          path: coverage.json
+          retention-days: 1
+
+  update-coverage:
+    name: Update Coverage Badge
+    runs-on: ubuntu-latest
+    needs: integration-tests
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Coverage JSON
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-json
+
+      - name: Extract Coverage Percentage
+        id: coverage
+        run: |
+          # Parse the generated coverage.json using standard python
+          COVERAGE=$(python3 -c "import json; print(json.load(open('coverage.json'))['totals']['percent_covered_display'])")
+          echo "COVERAGE=$COVERAGE" >> $GITHUB_OUTPUT
+          echo "Final Coverage: $COVERAGE%"
+
+          # Determine badge color
+          if (( $(echo "$COVERAGE > 90" | bc -l) )); then
+            COLOR="#30c454"
+          elif (( $(echo "$COVERAGE > 80" | bc -l) )); then
+            COLOR="yellow"
+          else
+            COLOR="red"
+          fi
+          echo "COLOR=$COLOR" >> $GITHUB_OUTPUT
+
+      - name: Create Badge
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: ${{ secrets.GIST_ID }}
+          filename: coverage.json
+          label: Coverage
+          message: ${{ steps.coverage.outputs.COVERAGE }}%
+          color: ${{ steps.coverage.outputs.COLOR }}

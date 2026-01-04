@@ -47,7 +47,7 @@ class AccountStatusEnum(str, Enum):
 
 # Commodity
 @dataclass(kw_only=True)
-class CommodityBase:
+class _CommodityBase:
     """Base class for commodities.
 
     Args:
@@ -57,17 +57,18 @@ class CommodityBase:
 
     name: str
     prefix: bool = False
+    description: Optional[str] = None
 
 
 @dataclass(kw_only=True)
-class CommodityCreate(CommodityBase):
+class CommodityCreate(_CommodityBase):
     """Used when creating a new commodity (No ID yet)."""
 
     pass
 
 
 @dataclass(kw_only=True)
-class Commodity(CommodityBase):
+class Commodity(_CommodityBase):
     """Represents a commodity with an assigned ID.
 
     Args:
@@ -79,7 +80,7 @@ class Commodity(CommodityBase):
 
 # Account
 @dataclass(kw_only=True)
-class AccountBase:
+class _AccountBase:
     """Base class for accounts.
 
     Args:
@@ -96,14 +97,18 @@ class AccountBase:
 
 
 @dataclass(kw_only=True)
-class AccountCreate(AccountBase):
-    """Used when creating a new account (No ID yet)."""
+class AccountCreate(_AccountBase):
+    """Used when creating a new account (No ID yet).
 
-    pass
+    Args:
+        open_date (datetime.datetime): The date the account was opened.
+    """
+
+    open_date: datetime.datetime
 
 
 @dataclass(kw_only=True)
-class Account(AccountBase):
+class Account(_AccountBase):
     """Represents an account with an assigned ID.
 
     Args:
@@ -130,7 +135,7 @@ class AccountStatus:
 
 # Split
 @dataclass(kw_only=True)
-class SplitBase:
+class _SplitBase:
     """Represents a split in a transaction.
 
     Args:
@@ -145,14 +150,14 @@ class SplitBase:
 
 
 @dataclass(kw_only=True)
-class SplitCreate(SplitBase):
+class SplitCreate(_SplitBase):
     """Used when creating a new split (No ID yet)."""
 
     pass
 
 
 @dataclass(kw_only=True)
-class Split(SplitBase):
+class Split(_SplitBase):
     """Represents a split with an assigned ID.
 
     Args:
@@ -160,12 +165,11 @@ class Split(SplitBase):
         transaction_id (TransactionID): The ID of the transaction associated with the split.
     """
 
-    id: SplitID
     transaction_id: TransactionID
 
 
 @dataclass(kw_only=True)
-class TransactionBase:
+class _TransactionBase:
     """Base class for transactions.
 
     Args:
@@ -180,7 +184,7 @@ class TransactionBase:
 
 
 @dataclass(kw_only=True)
-class TransactionCreate(TransactionBase):
+class TransactionCreate(_TransactionBase):
     """Used when creating a new transaction (No ID yet).
 
     Args:
@@ -191,7 +195,7 @@ class TransactionCreate(TransactionBase):
 
 
 @dataclass(kw_only=True)
-class Transaction(TransactionBase):
+class Transaction(_TransactionBase):
     """Represents a transaction with an assigned ID.
 
     Args:

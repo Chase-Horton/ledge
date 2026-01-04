@@ -5,7 +5,6 @@ Models
 --------------------------
 
 .. automodule:: ledge.domain.models
-   :show-inheritance:
    :inherited-members:
    :exclude-members: AccountID, CommodityID, TransactionID, SplitID, AccountTypeEnum, AccountStatusEnum
 
@@ -13,10 +12,8 @@ Models
 Types
 -----------------------
 .. autoclass:: ledge.domain.models.AccountTypeEnum
-   :show-inheritance:
 
 .. autoclass:: ledge.domain.models.AccountStatusEnum
-   :show-inheritance:
 
 .. py:data:: AccountID
    :type: int
