@@ -99,6 +99,65 @@ def test_add_commodity(temp_db_config, cleanup_db):
         assert repo._connection is None
 
 
+def test_get_commodities(temp_db_config, cleanup_db):
+    """
+    Test get_commodities returns empty list when no commodities exist.
+    1. Verify empty list on new DB.
+    2. Add multiple commodities.
+    3. Verify get_commodities returns all added commodities.
+    4. Verify attributes of returned commodities.
+    5. Verify IDs are unique.
+    """
+    try:
+        repo = PostgreSQLRepository()
+        repo.create()
+
+        commodities = repo.get_commodities()
+        assert commodities == []
+
+        new_commodity = models.CommodityCreate(
+            name="USD", prefix=True, description="US Dollar"
+        )
+        added = repo.add_commodity(new_commodity)
+
+        commodities = repo.get_commodities()
+        assert len(commodities) == 1
+        assert commodities[0].id == added.id
+        assert commodities[0].name == "USD"
+        assert commodities[0].prefix is True
+        assert commodities[0].description == "US Dollar"
+
+        commodities_to_add = [
+            models.CommodityCreate(
+                name="CAD", prefix=False, description="Canadian Dollar"
+            ),
+            models.CommodityCreate(name="BTC", prefix=False),
+            models.CommodityCreate(name="$", prefix=True),
+        ]
+        added_ids = [added.id]
+        for c in commodities_to_add:
+            added = repo.add_commodity(c)
+            added_ids.append(added.id)
+
+        commodities = repo.get_commodities()
+        assert len(commodities) == 4
+
+        names = {c.name for c in commodities}
+        assert names == {"USD", "CAD", "BTC", "$"}
+
+        descriptions = {c.description for c in commodities}
+        assert descriptions == {"US Dollar", "Canadian Dollar", None}
+
+        prefixes = {c.prefix for c in commodities}
+        assert prefixes == {True, False}
+
+        for c in commodities:
+            assert c.id in added_ids
+
+    finally:
+        repo.close()
+
+
 def create_commodity(repo, name="USD", prefix=True, description="US Dollar"):
     """
     Helper function to create a test commodity.

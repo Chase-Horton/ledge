@@ -127,12 +127,26 @@ class PostgreSQLRepository(AbstractRepository):
         )
 
     @doc_inherit
+    def get_commodities(self) -> list[models.Commodity]:
+        query = """SELECT id, name, prefix, description
+                   FROM commodity;"""
+        cursor = self.connection.cursor()
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        if not rows:
+            return []
+        return [
+            models.Commodity(id=row[0], name=row[1], prefix=row[2], description=row[3])
+            for row in rows
+        ]
+
+    @doc_inherit
     def open_account(self, account: models.AccountCreate) -> models.Account:
         status_insert = """INSERT INTO account_statuses (status, date, account_id)
                      VALUES (%s, %s, %s);"""
 
-        account_insert = """INSERT INTO accounts (name, type, open, commodity_id)
-                     VALUES (%s, %s, %s, %s) RETURNING id;"""
+        account_insert = """INSERT INTO accounts (name, type, open, commodity_id, description)
+                     VALUES (%s, %s, %s, %s, %s) RETURNING id;"""
         cursor = self.connection.cursor()
 
         cursor.execute(
@@ -142,6 +156,7 @@ class PostgreSQLRepository(AbstractRepository):
                 account.type,
                 True,
                 account.commodity.id if account.commodity else None,
+                account.description,
             ),
         )
         account_id = cursor.fetchone()
@@ -162,6 +177,7 @@ class PostgreSQLRepository(AbstractRepository):
             type=account.type,
             open=True,
             commodity=account.commodity,
+            description=account.description,
         )
 
     @doc_inherit
@@ -174,6 +190,7 @@ class PostgreSQLRepository(AbstractRepository):
     a.name,
     a.type,
     a.open,
+    a.description,
     a.commodity_id,
     c.name AS commodity_name,
     c.prefix AS commodity_prefix
@@ -190,10 +207,11 @@ LEFT JOIN commodity c ON a.commodity_id = c.id;"""
                     name=row[1],
                     type=row[2],
                     open=row[3],
+                    description=row[4],
                     commodity=models.Commodity(
-                        id=row[4], name=row[5], prefix=row[6], description=None
+                        id=row[5], name=row[6], prefix=row[7], description=None
                     )
-                    if row[4] is not None
+                    if row[5] is not None
                     else None,
                 )
             )
@@ -206,6 +224,7 @@ LEFT JOIN commodity c ON a.commodity_id = c.id;"""
     a.name,
     a.type,
     a.open,
+    a.description,
     a.commodity_id,
     c.name AS commodity_name,
     c.prefix AS commodity_prefix
@@ -222,10 +241,11 @@ WHERE a.id = %s;"""
             name=row[1],
             type=row[2],
             open=row[3],
+            description=row[4],
             commodity=models.Commodity(
-                id=row[4], name=row[5], prefix=row[6], description=None
+                id=row[5], name=row[6], prefix=row[7], description=None
             )
-            if row[4] is not None
+            if row[5] is not None
             else None,
         )
 
@@ -348,6 +368,7 @@ ORDER BY t.date DESC, t.id, s.id;"""
     a.name,
     a.type,
     a.open,
+    a.description,
     a.commodity_id,
     c.name AS commodity_name,
     c.prefix AS commodity_prefix
@@ -365,10 +386,11 @@ WHERE a.name ILIKE %s;"""
                     name=row[1],
                     type=row[2],
                     open=row[3],
+                    description=row[4],
                     commodity=models.Commodity(
-                        id=row[4], name=row[5], prefix=row[6], description=None
+                        id=row[5], name=row[6], prefix=row[7], description=None
                     )
-                    if row[4] is not None
+                    if row[5] is not None
                     else None,
                 )
             )

@@ -94,6 +94,7 @@ class _AccountBase:
     type: AccountTypeEnum
     commodity: Optional[Commodity] = None
     open: bool = True
+    description: Optional[str] = None
 
 
 @dataclass(kw_only=True)

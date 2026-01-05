@@ -19,6 +19,7 @@ CREATE TABLE commodity (
 CREATE TABLE accounts (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
+    description TEXT,
     type account_type_enum NOT NULL,
     open boolean NOT NULL DEFAULT TRUE,
     commodity_id INTEGER REFERENCES commodity(id)

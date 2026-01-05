@@ -54,6 +54,14 @@ class AbstractRepository(ABC):
         """
 
     @abstractmethod
+    def get_commodities(self) -> list[models.Commodity]:
+        """Retrieve all commodities from the repository.
+
+        Returns:
+            list[models.Commodity]: A list of all commodities.
+        """
+
+    @abstractmethod
     def open_account(self, account: models.AccountCreate) -> models.Account:
         """Open a new account in the repository. Also creates the associated open status.
 

@@ -4,11 +4,20 @@ version = "0.1"
 description = "A double entry accounting system in python"
 readme = "README.md"
 requires-python = ">=3.10" # could target earlier but 3.9 is EOL
+license = "GPL-3.0-or-later"
+authors = [
+    {name = "chase horton", email = "chasehortonj@gmail.com"},
+]
+license-files = ["LICENSE*"]
 dependencies = [
     "psycopg2>=2.9.10",
 ]
 
 [dependency-groups]
+cli = [
+    "prompt-toolkit>=3.0.52",
+    "typer>=0.21.0",
+]
 dev = [
   {include-group = "lint"},
   {include-group = "test"},
@@ -28,6 +37,9 @@ util = [
   "python-dotenv"
 ]
 
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.ruff.lint]
 # "D" to enable pydocstyle rules
@@ -49,3 +61,10 @@ testpaths = ["tests"]
 markers = [
   "integration: mark test as requiring a PostgreSQL integration database"
 ]
+[tool.coverage.run]
+source = ["src"]
+# currently just a tool for testing
+omit = ["src/ledge/cli/*"]
+
+[project.scripts]
+ledge = "ledge.cli:app"
