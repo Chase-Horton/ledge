@@ -16,7 +16,9 @@ app = typer.Typer(
 )
 
 
-def parse_amount(amount_str: str, commodities: list) -> tuple[Decimal, int] | None:
+def parse_amount(
+    amount_str: str, commodities: list[models.Commodity]
+) -> tuple[Decimal, int] | None:
     """Parse an amount string like '50 USD' or '-10 CAD' into (amount, commodity_id)."""
     commodity_map = {comm.name.upper(): comm for comm in commodities}
 
@@ -43,7 +45,7 @@ def main(
     repo_type: str = typer.Option(
         "postgres", envvar="repo", help="Repo type: postgres or sqlite"
     ),
-):
+) -> None:
     """We set up the repo here and attach it to the context."""
     if repo_type == "postgres":
         repo = PostgreSQLRepository()
@@ -53,14 +55,14 @@ def main(
 
     ctx.obj = repo
 
-    def cleanup():
+    def cleanup() -> None:
         repo.close()
 
     ctx.call_on_close(cleanup)
 
 
 @app.command()
-def add(ctx: typer.Context):
+def add(ctx: typer.Context) -> None:
     """A CLI prompt tool to add a new transaction."""
     print()
     console.print("[bold cyan]Add a New Transaction[/bold cyan]\n")
@@ -163,7 +165,6 @@ def add(ctx: typer.Context):
 
     # Validate balance per commodity
     commodity_map = {comm.id: comm for comm in commodities}
-    totals_by_commodity: dict[int, Decimal] = {}
     for s in splits:
         totals_by_commodity[s.commodity_id] = (
             totals_by_commodity.get(s.commodity_id, Decimal(0)) + s.amount
@@ -207,7 +208,7 @@ def add(ctx: typer.Context):
     for split in splits:
         account_splits[split.account_id].append(split)
 
-    def account_sort_key(account_id):
+    def account_sort_key(account_id: models.AccountID) -> tuple[bool, str]:
         splits_for_account = account_splits[account_id]
         has_positive = any(s.amount > 0 for s in splits_for_account)
         return (not has_positive, account_map.get(account_id, ""))

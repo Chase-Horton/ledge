@@ -19,7 +19,7 @@ def main(
     repo_type: str = typer.Option(
         "postgres", envvar="repo", help="Repo type: postgres or sqlite"
     ),
-):
+) -> None:
     """We set up the repo here and attach it to the context."""
     if repo_type == "postgres":
         repo = PostgreSQLRepository()
@@ -29,7 +29,7 @@ def main(
 
     ctx.obj = repo
 
-    def cleanup():
+    def cleanup() -> None:
         repo.close()
 
     ctx.call_on_close(cleanup)
@@ -39,7 +39,7 @@ def main(
 def list(
     ctx: typer.Context,
     verbose: bool = typer.Option(False, "-v", "--verbose", help="Show account IDs"),
-):
+) -> None:
     """List all accounts."""
     print()
     accounts = ctx.obj.get_accounts()
@@ -66,7 +66,7 @@ def list(
 
 
 @app.command()
-def open(ctx: typer.Context):
+def open(ctx: typer.Context) -> None:
     """A CLI prompt tool to open a new account."""
     print()
     console.print("[bold cyan]Open a New Account[/bold cyan]")

@@ -55,7 +55,7 @@ jobs:
         run: uv python install 3.13
 
       - name: Run Mypy
-        run: uv run --no-dev --group lint mypy ./src/ --strict
+        run: uv run --no-dev --group lint --group cli mypy ./src/ --strict
 
   integration-tests:
     name: Integration Tests

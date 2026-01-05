@@ -18,7 +18,7 @@ def main(
     repo_type: str = typer.Option(
         "postgres", envvar="repo", help="Repo type: postgres or sqlite"
     ),
-):
+) -> None:
     """We set up the repo here and attach it to the context."""
     if repo_type == "postgres":
         repo = PostgreSQLRepository()
@@ -28,7 +28,7 @@ def main(
 
     ctx.obj = repo
 
-    def cleanup():
+    def cleanup() -> None:
         repo.close()
 
     ctx.call_on_close(cleanup)
@@ -38,7 +38,7 @@ def main(
 def list(
     ctx: typer.Context,
     verbose: bool = typer.Option(False, "-v", "--verbose", help="Show commodity IDs"),
-):
+) -> None:
     """List all commodities."""
     commodities = ctx.obj.get_commodities()
 
@@ -75,7 +75,7 @@ def add(
     description: str | None = typer.Option(
         None, help="Optional description of the commodity"
     ),
-):
+) -> None:
     """Add a new commodity."""
     print()
     console.print("[bold cyan]New Commodity[/bold cyan]\n")
